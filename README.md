@@ -13,7 +13,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-orange.svg)]()
 
-# 🎀 `Itsuki Nakano IA - V2` 🌸
+# 🎀 `AGGxSETHGX9 - V2` 🌸
 
 **Bot Multi-Prefijo con Sistema de Comandos Avanzado**  
 *La evolución del bot temático más completo de WhatsApp - ¡Ahora con más potencia y personalización!*
@@ -44,6 +44,6 @@ npm install
 npm start
 ```
 
-### **`ʟᴇᴏ ᴘʀᴏᴘɪᴇᴛᴀʀɪᴏ ᴅᴇʟ ᴘʀᴏʏᴇᴄᴛᴏ`**
+### **`JULIO ᴘʀᴏᴘɪᴇᴛᴀʀɪᴏ ᴅᴇʟ ᴘʀᴏʏᴇᴄᴛᴏ`**
 <a
-href="https://github.com/leoxito"><img src="https://github.com/leoxito.png" width="130" height="130" alt="xzzys26"/></a>
+href="https://github.com/JulioDuran22"><img src="https://github.com/leoxito.png" width="130" height="130" alt="xzzys26"/></a>
