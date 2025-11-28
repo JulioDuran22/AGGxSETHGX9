@@ -1,5 +1,5 @@
-# `👑 Itsuki Nakano - IA V2` ✨
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Oswald+Code&pause=1000&color=FF69B4&width=435&lines=Bienvenido+al+Repositorio;Itsuki+Nakano+IA+V2;Versión+6.4.1+Oficial;Creado+por+LeoXzzsy;)](https://git.io/typing-svg)
+# `👑 AGGxSETHGX9 - IA V2` ✨
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Oswald+Code&pause=1000&color=FF69B4&width=435&lines=Bienvenido+al+Repositorio;AGG+xSETHGX9+IA+V2;Versión+6.4.1+Oficial;Creado+por+SETHGX9;)](https://git.io/typing-svg)
 
 <!-- Banner -->
 <h1 align="center">
@@ -35,7 +35,7 @@ termux-setup-storage
 apt update && apt upgrade && pkg install -y git nodejs ffmpeg imagemagick yarn
 ```
 ```bash
-git clone https://github.com/leoxito/Itsuki-NakanoV2 && cd Itsuki-NakanoV2
+git clone https://github.com/JulioDuran22/AGGxSETHGX9 && cd AGGxSETHGX9
 ```
 ```bash
 npm install
