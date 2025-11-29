@@ -38,7 +38,7 @@ handler.help = ['mute', 'unmute'];
 handler.tags = ['owner'];
 handler.command = ['mute','unmute'];
 handler.group = true;
-handler.rowner = true;
+handler.owner = true;
 handler.botAdmin = true;
 
 export default handler;
