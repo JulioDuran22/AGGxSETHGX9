@@ -22,6 +22,8 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
       '*AGG-INFO*': ['main', 'info'],
       '*INTELIGENCIA*': ['bots', 'ia'],
       '*JUEGOS*': ['game', 'gacha'],
+      '*FREE-FIRE*': ['free'],
+      '*TOPS*': ['fun'],
       '*ECONOMÍA*': ['economy', 'rpgnk'],
       '*GRUPOS*': ['group'],
       '*DESCARGAS*': ['downloader'],
