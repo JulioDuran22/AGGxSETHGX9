@@ -3,81 +3,50 @@ import fetch from 'node-fetch'
 import Jimp from 'jimp'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  const ctxErr = global.rcanalx || { contextInfo: { externalAdReply: { title: '❌ Error', body: 'AGG x ꜱᴇᴛʜɢx9', thumbnailUrl: 'https://files.catbox.moe/zh5z6m.jpg', sourceUrl: global.canalOficial || '' }}}
-  const ctxWarn = global.rcanalw || { contextInfo: { externalAdReply: { title: '⚠️ Advertencia', body: 'AGG x ꜱᴇᴛʜɢx9', thumbnailUrl: 'https://files.catbox.moe/zh5z6m.jpg', sourceUrl: global.canalOficial || '' }}}
-  const ctxOk = global.rcanalr || { contextInfo: { externalAdReply: { title: '✅ Acción', body: 'AGG x ꜱᴇᴛʜɢx9', thumbnailUrl: 'https://qu.ax/QGAVS.jpg', sourceUrl: global.canalOficial || '' }}}
-
   if (!text) {
-    return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ 🕸️ ꒱꒱ :: *DESCARGA APK* ıllı
+    return conn.reply(m.chat, `> ⓘ USO INCORRECTO
 
-> ੭੭ ﹙ ❌ ﹚:: *Nombre requerido*
+> ❌ Debes ingresar el nombre de la aplicación
 
-\`\`\`Debes ingresar el nombre de la aplicación\`\`\`
+> 📝 Ejemplos:
+> • ${usedPrefix + command} WhatsApp
+> • ${usedPrefix + command} TikTok
 
-*Ejemplo:*
-> ${usedPrefix + command} WhatsApp
-> ${usedPrefix + command} TikTok
-
-*Nota:* Busca y descarga APKs desde Aptoide`, m, ctxWarn)
+> 💡 Busca y descarga APKs desde Aptoide`, m)
   }
 
   try {
-    await m.react('🕒')
+    await conn.sendMessage(m.chat, { react: { text: '🔍', key: m.key } })
 
     let searchA = await search(text)
     if (!searchA.length) {
-      await m.react('❌')
-      return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ ⚠️ ꒱꒱ :: *SIN RESULTADOS* ıllı
+      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+      return conn.reply(m.chat, `> ⓘ SIN RESULTADOS
 
-> ੭੭ ﹙ 🔍 ﹚:: *Búsqueda sin resultados*
+> ❌ No se encontraron aplicaciones para: ${text}
 
-\`\`\`No se encontraron aplicaciones para: ${text}\`\`\`
-
-*Sugerencias:*
-• Verifica la ortografía
-• Intenta con el nombre exacto
-• Usa términos en inglés`, m, ctxErr)
+> 💡 Verifica la ortografía o usa otro nombre`, m)
     }
 
     let data5 = await download(searchA[0].id)
 
-    let txt = `> ꒰⌢ ʚ˚₊‧ 📱 ꒱꒱ :: *INFORMACIÓN DE LA APK* ıllı
+    let txt = `> ⓘ INFORMACION APK
 
-> ੭੭ ﹙ 🏷️ ﹚:: *Nombre*
-\`\`\`${data5.name}\`\`\`
+> 📱 ${data5.name}
+> 📦 ${data5.package}
+> 📅 ${data5.lastup}
+> 💾 ${data5.size}`
 
-> ੭੭ ﹙ 📦 ﹚:: *Package*
-\`\`\`${data5.package}\`\`\`
-
-> ੭੭ ﹙ 📅 ﹚:: *Última actualización*
-\`\`\`${data5.lastup}\`\`\`
-
-> ੭੭ ﹙ 💾 ﹚:: *Tamaño*
-\`\`\`${data5.size}\`\`\`
-
-> ੭੭ ﹙ 📥 ﹚:: *Estado*
-\`\`\`Preparando descarga...\`\`\`
-
-‐ ダ *AGG x ꜱᴇᴛʜɢx9 𝙋𝙧𝙚𝙢𝘽𝙤𝙩* ギ
-‐ ダ *ᴘᴏᴡᴇʀᴇᴅ ʙʏ AGG x ꜱᴇᴛʜɢx9* ギ`
-
-    await conn.sendFile(m.chat, data5.icon, 'thumbnail.jpg', txt, m, null, ctxOk)
+    await conn.sendFile(m.chat, data5.icon, 'thumbnail.jpg', txt, m)
 
     if (data5.size.includes('GB') || parseFloat(data5.size.replace(' MB', '')) > 999) {
-      await m.react('❌')
-      return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ ꕥ ꒱꒱ :: *ARCHIVO DEMASIADO GRANDE* ıllı
+      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+      return conn.reply(m.chat, `> ⓘ ARCHIVO DEMASIADO GRANDE
 
-> ੭੭ ﹙ ⚠️ ﹚:: *Límite de tamaño excedido*
+> ❌ El archivo pesa: ${data5.size}
 
-\`\`\`El archivo pesa: ${data5.size}\`\`\`
-
-> ੭੭ ﹙ 📏 ﹚:: *Límite máximo permitido*
-\`\`\`999 MB\`\`\`
-
-*Solución:*
-• Busca una versión más ligera
-• Descarga desde otro sitio
-• Verifica el tamaño antes de descargar`, m, ctxErr)
+> 💡 Límite máximo: 999 MB
+> 💡 Busca una versión más ligera`, m)
     }
 
     let thumbnail = null
@@ -86,7 +55,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       img.resize(300, Jimp.AUTO)
       thumbnail = await img.getBufferAsync(Jimp.MIME_JPEG)
     } catch (err) {
-      console.log('⚠️ Error al crear miniatura:', err)
+      console.log('Error al crear miniatura:', err)
     }
 
     await conn.sendMessage(
@@ -95,59 +64,32 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         document: { url: data5.dllink },
         mimetype: 'application/vnd.android.package-archive',
         fileName: `${data5.name}.apk`,
-        caption: `> ꒰⌢ ʚ˚₊‧ ✅ ꒱꒱ :: *APK DESCARGADA* ıllı
+        caption: `> ⓘ APK DESCARGADA
 
-> ੭੭ ﹙ 📱 ﹚:: *Aplicación*
-\`\`\`${data5.name}\`\`\`
-
-> ੭੭ ﹙ 📦 ﹚:: *Package*
-\`\`\`${data5.package}\`\`\`
-
-> ੭੭ ﹙ 💾 ﹚:: *Tamaño*
-\`\`\`${data5.size}\`\`\`
-
-‐ ダ *AGG x ꜱᴇᴛʜɢx9 𝙋𝙧𝙚𝙢𝘽𝙤𝙩* ギ
-‐ ダ *ᴘᴏᴡᴇʀᴇᴅ ʙʏ AGG x ꜱᴇᴛʜɢx9* ギ`,
-        ...(thumbnail ? { jpegThumbnail: thumbnail } : {}),
-        contextInfo: {
-          externalAdReply: {
-            title: `${data5.name}`,
-            body: `📱 ${data5.size} • Aptoide Download`,
-            mediaType: 1,
-            sourceUrl: data5.dllink
-          }
-        }
+> 📱 ${data5.name}
+> 📦 ${data5.package}
+> 💾 ${data5.size}`,
+        ...(thumbnail ? { jpegThumbnail: thumbnail } : {})
       },
       { quoted: m }
     )
 
-    await m.react('✅')
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
 
   } catch (error) {
     console.error(error)
-    await m.react('❌')
-    return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ ✖️ ꒱꒱ :: *ERROR EN DESCARGA* ıllı
+    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+    return conn.reply(m.chat, `> ⓘ ERROR
 
-> ੭੭ ﹙ ⚠️ ﹚:: *Error detectado*
+> ❌ ${error.message || 'Error al procesar la descarga'}
 
-\`\`\`${error.message || 'Error al procesar la descarga'}\`\`\`
-
-*Posibles causas:*
-• Aplicación no disponible
-• Problemas con Aptoide
-• Error en la conexión
-
-*Solución:*
-• Verifica el nombre de la aplicación
-• Intenta con otro término de búsqueda
-• Usa *${usedPrefix}report* para informar el problema`, m, ctxErr)
+> 💡 Verifica el nombre o intenta más tarde`, m)
   }
 }
 
-handler.tags = ['premium']
+handler.tags = ['downloader']
 handler.help = ['modoapk']
-handler.command = ['modapk', 'apk2']
+handler.command = ['modapk2', 'apk2']
 handler.group = true
-handler.premium = true
 
 export default handler

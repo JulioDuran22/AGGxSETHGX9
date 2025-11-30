@@ -107,7 +107,7 @@ let handler = async (m, { conn, usedPrefix, command, isOwner, args, sender }) =>
   if ((command === 'chetar' || command === 'beryenes') && !isOwner) {
     return conn.reply(m.chat, 
       `🍙❌ *ACCESO DENEGADO* 🔒\n\n` +
-      `⚠️ Solo LeoXzz puede usar este comando\n\n` +
+      `⚠️ Solo sethgx9 puede usar este comando\n\n` +
       `💡 Usa ${usedPrefix}infinito para obtener monedas`,
       m, ctxErr
     )

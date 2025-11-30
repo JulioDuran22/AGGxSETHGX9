@@ -109,28 +109,27 @@ async function openMovieByArg(m, conn, arg) {
   if (!target) return { ok: false, why: 'invalid' }
 
   const details = await getMovieDetails(target)
-  
-  let msg = `꒰⌢ ʚ˚₊‧ 🎬 ꒱꒱ :: *${details?.title || 'PELÍCULA'}* ıllı\n\n`
+
+  let msg = `> ⓘ PELICULA\n\n`
+  msg += `🎬 ${details?.title || 'PELÍCULA'}\n\n`
 
   if (details?.description) {
-    msg += `੭੭ ﹙ 📝 ﹚:: *Descripción*\n\`\`\`${details.description}\`\`\`\n\n`
+    msg += `📝 ${details.description}\n\n`
   }
 
   if (details?.director) {
-    msg += `੭੭ ﹙ 🎥 ﹚:: *Director*\n\`\`\`${details.director}\`\`\`\n\n`
+    msg += `🎥 Director: ${details.director}\n\n`
   }
 
   if (details?.genres?.length) {
-    msg += `੭੭ ﹙ 🏷️ ﹚:: *Géneros*\n\`\`\`${details.genres.join(', ')}\`\`\`\n\n`
+    msg += `🏷 Géneros: ${details.genres.join(', ')}\n\n`
   }
 
-  msg += `੭੭ ﹙ 🔗 ﹚:: *Link*\n${target}\n\n`
-  msg += `‐ ダ *AGG x ꜱᴇᴛʜɢx9 * ギ`
+  msg += `🔗 ${target}`
 
   await conn.sendMessage(m.chat, {
-    image: { url: poster || 'https://files.catbox.moe/b10cv6.jpg' },
-    caption: msg.trim(),
-    contextInfo: global.rcanalr
+    image: { url: poster || 'https://images.unsplash.com/photo-1546387903-6d82d96ccca6?w=500&auto=format&fit=crop&q=60' },
+    caption: msg.trim()
   }, { quoted: m })
 
   return { ok: true }
@@ -142,115 +141,51 @@ let handler = async (m, { text, conn, usedPrefix, command }) => {
   if (isOpen) {
     const arg = (text || '').trim()
     if (!arg) {
-      return conn.reply(m.chat, `꒰⌢ ʚ˚₊‧ 📥 ꒱꒱ :: *ABRIR PELÍCULA* ıllı
-
-੭੭ ﹙ ❌ ﹚:: *Uso incorrecto*
-
-\`\`\`Debes proporcionar un número o URL\`\`\`
-
-*Ejemplos:*
-• ${usedPrefix}pfopen 1
-• ${usedPrefix}pfopen 5
-• ${usedPrefix}pfopen https://pelisflix1.vip/pelicula/...
-
-‐ ダ *AGG x ꜱᴇᴛʜɢx9 * ギ`, m, global.rcanalw)
+      return conn.reply(m.chat, `> ⓘ USO INCORRECTO\n\n❌ Debes proporcionar un número o URL\n\n📝 Ejemplos:\n• ${usedPrefix}pfopen 1\n• ${usedPrefix}pfopen https://pelisflix1.vip/...`, m)
     }
 
-    await m.react('📀')
+    await conn.sendMessage(m.chat, { react: { text: '🎬', key: m.key } })
     const res = await openMovieByArg(m, conn, arg)
-    
+
     if (!res.ok) {
-      return conn.reply(m.chat, `꒰⌢ ʚ˚₊‧ ⚠️ ꒱꒱ :: *ERROR* ıllı
-
-੭੭ ﹙ ❌ ﹚:: *Formato inválido*
-
-\`\`\`El número o URL proporcionado no es válido\`\`\`
-
-*Sugerencias:*
-• Vuelve a buscar la película
-• Elige un número de la lista
-• Verifica que la URL sea correcta
-
-‐ ダ *AGG x ꜱᴇᴛʜɢx9 * ギ`, m, global.rcanalx)
+      return conn.reply(m.chat, `> ⓘ ERROR\n\n❌ Número o URL inválido\n\n💡 Vuelve a buscar la película`, m)
     }
-    
-    await m.react('✅')
+
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
     return
   }
 
   if (!text) {
-    return conn.reply(m.chat, `꒰⌢ ʚ˚₊‧ 🎬 ꒱꒱ :: *PELISFLIX SEARCH* ıllı
-
-੭੭ ﹙ ❌ ﹚:: *Uso incorrecto*
-
-\`\`\`Debes proporcionar el nombre de una película\`\`\`
-
-*Ejemplo:*
-• ${usedPrefix + command} dune
-• ${usedPrefix + command} mario
-• ${usedPrefix + command} avatar
-
-‐ ダ *AGG x ꜱᴇᴛʜɢx9 * ギ`, m, global.rcanalw)
+    return conn.reply(m.chat, `> ⓘ BUSCADOR\n\n❌ Debes proporcionar el nombre de una película\n\n📝 Ejemplos:\n• ${usedPrefix + command} dune\n• ${usedPrefix + command} avatar`, m)
   }
 
-  await m.react('🎞️')
-  
+  await conn.sendMessage(m.chat, { react: { text: '🔍', key: m.key } })
+
   try {
     const results = await searchMovies(text)
-    
+
     if (!results.length) {
-      await m.react('❌')
-      return conn.reply(m.chat, `꒰⌢ ʚ˚₊‧ 🔍 ꒱꒱ :: *BÚSQUEDA* ıllı
-
-੭੭ ﹙ ❌ ﹚:: *No se encontraron resultados*
-
-\`\`\`Intenta con otro nombre de película\`\`\`
-
-*Sugerencias:*
-• Verifica la ortografía
-• Usa nombres completos
-• Prueba con títulos en inglés
-
-‐ ダ *AGG x ꜱᴇᴛʜɢx9 * ギ`, m, global.rcanalx)
+      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+      return conn.reply(m.chat, `> ⓘ SIN RESULTADOS\n\n❌ No se encontraron películas\n\n💡 Intenta con otro nombre`, m)
     }
 
     pfCache.set(m.sender, { time: Date.now(), results })
 
     const MAX_TEXT = Math.min(results.length, 50)
-    const listTxt = results.slice(0, MAX_TEXT).map((r, i) => `${i + 1}. ${r.title}\n${r.link}`).join('\n\n')
-    
-    let msg = `꒰⌢ ʚ˚₊‧ 🎬 ꒱꒱ :: *RESULTADOS* ıllı\n\n`
-    msg += `੭੭ ﹙ 📊 ﹚:: *Total encontrado*\n\`\`\`${results.length} películas\`\`\`\n\n`
+    const listTxt = results.slice(0, MAX_TEXT).map((r, i) => `${i + 1}. ${r.title}`).join('\n')
+
+    let msg = `> ⓘ RESULTADOS: ${results.length}\n\n`
     msg += `${listTxt}\n\n`
-    msg += `੭੭ ﹙ 👉 ﹚:: *Siguiente paso*\n\`\`\`Usa: ${usedPrefix}pfopen <número>\`\`\`\n\n`
-    msg += `*Ejemplo:* ${usedPrefix}pfopen 1\n\n`
-    msg += `‐ ダ *AGG x ꜱᴇᴛʜɢx9 * ギ`
+    msg += `📝 Usa: ${usedPrefix}pfopen <número>\n💡 Ejemplo: ${usedPrefix}pfopen 1`
 
-    await conn.sendMessage(m.chat, {
-      text: msg,
-      contextInfo: global.rcanalr
-    }, { quoted: m })
-
-    await m.react('✅')
+    await conn.reply(m.chat, msg, m)
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
 
   } catch (error) {
-    await m.react('❌')
+    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
     console.error('Error en pelisflix:', error)
-    
-    return conn.reply(m.chat, `꒰⌢ ʚ˚₊‧ ⚠️ ꒱꒱ :: *ERROR* ıllı
-
-੭੭ ﹙ ❌ ﹚:: *Ocurrió un error*
-
-\`\`\`${error.message || 'Error desconocido'}\`\`\`
-
-*Intenta de nuevo más tarde*
-
-‐ ダ *AGG x ꜱᴇᴛʜɢx9 * ギ`, m, global.rcanalx)
+    return conn.reply(m.chat, `> ⓘ ERROR\n\n❌ Ocurrió un error\n\n💡 Intenta más tarde`, m)
   }
-}
-
-handler.before = async function (m) {
-  return false
 }
 
 handler.help = ['pelisflix']

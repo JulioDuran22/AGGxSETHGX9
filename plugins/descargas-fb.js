@@ -1,125 +1,60 @@
-import fetch from 'node-fetch'
+import getFacebookDownloadInfo from '../lib/fdownloader.js'
 
-/**
- * 🎀 CREADO POR: LeoXzzsy
- * 🌸 ADAPTADO PARA: AGG x ꜱᴇᴛʜɢx9
- * 📚 VERSIÓN: 3.4.0 Beta
- * 🏷️ DESCARGADOR FACEBOOK
- */
+const chooseDownloadable = (formats) =>
+  formats.find((item) => item?.url && !item.requiresRender)
 
-let handler = async (m, { conn, usedPrefix, command, args }) => {
-  const ctxErr = (global.rcanalx || {})
-  const ctxWarn = (global.rcanalw || {})
-  const ctxOk = (global.rcanalr || {})
+let handler = async (m, { conn, args, text, usedPrefix, command }) => {
+  const targetUrl = text?.trim() || args?.[0]
+  if (!targetUrl) {
+    return conn.reply(m.chat, `> ⓘ \`Uso:\` *${usedPrefix + command} link de Facebook*`, m)
+  }
+
+  await m.react('🕑')
 
   try {
-    if (!args[0]) {
-      return conn.reply(m.chat,
-        `🎀 *AGG x ꜱᴇᴛʜɢx9 - Descargador Facebook*\n\n` +
-        `✦ *Uso correcto:*\n` +
-        `*${usedPrefix}fb* <url_de_facebook>\n\n` +
-        `✦ *Ejemplo:*\n` +
-        `*${usedPrefix}fb* https://fb.watch/xxxxx\n\n` +
-        `🌸 *AGG te ayudará a descargar el video...* (◕‿◕✿)`,
-      m, ctxWarn)
+    const { formats } = await getFacebookDownloadInfo(targetUrl)
+
+    const directFormats = formats.filter((item) => item?.url && !item.requiresRender)
+    if (!directFormats.length) {
+      await m.react('❌')
+      return conn.reply(m.chat, '> ⓘ \`No se encontraron enlaces directos para descargar\`', m)
     }
 
-    const url = args[0]
-    if (!url.match(/facebook\.com|fb\.watch/)) {
-      return conn.reply(m.chat,
-        `🎀 *AGG x ꜱᴇᴛʜɢx9*\n\n` +
-        `❌ *URL no válida*\n\n` +
-        `✦ Por favor envía un enlace de Facebook válido\n` +
-        `✦ Ejemplo: https://fb.watch/xxxxx\n\n` +
-        `🌸 *AGG está confundida...* (´･ω･\`)`,
-      m, ctxErr)
-    }
+    const chosen = chooseDownloadable(directFormats)
 
-    await m.react('📥')
-    
-    // Mensaje de espera
-    await conn.reply(m.chat,
-      `🎀 *AGG x ꜱᴇᴛʜɢx9*\n\n` +
-      `📥 *Procesando video de Facebook...*\n` +
-      `✦ Analizando enlace...\n` +
-      `✦ Preparando descarga...\n\n` +
-      `🌸 *Por favor espera un momento...* (◕‿◕✿)`,
-    m, ctxWarn)
-
-    // API de mayapi
-    const apiUrl = `https://mayapi.ooguy.com/facebook?url=${encodeURIComponent(url)}&apikey=may-f53d1d49`
-    console.log('🔗 Solicitando a API:', apiUrl)
-
-    const response = await fetch(apiUrl, {
-      timeout: 30000
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error en la API: ${response.status} - ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    console.log('📦 Respuesta de API:', data)
-
-    // Verificar diferentes estructuras de respuesta
-    if (!data.status) {
-      throw new Error('La API no respondió correctamente')
-    }
-
-    let videoUrl, videoTitle
-
-    // Buscar en diferentes estructuras posibles
-    if (data.result && data.result.url) {
-      videoUrl = data.result.url
-      videoTitle = data.result.title || 'Video de Facebook'
-    } else if (data.url) {
-      videoUrl = data.url
-      videoTitle = data.title || 'Video de Facebook'
-    } else if (data.data && data.data.url) {
-      videoUrl = data.data.url
-      videoTitle = data.data.title || 'Video de Facebook'
+    // Si el comando es fbaudio, enviar solo audio
+    if (command === 'fbaudio') {
+      await conn.sendMessage(
+        m.chat,
+        {
+          audio: { url: chosen.url },
+          mimetype: 'audio/mpeg',
+          fileName: 'facebook_audio.mp3',
+          ptt: false
+        },
+        { quoted: m }
+      )
     } else {
-      throw new Error('No se encontró URL del video en la respuesta')
+      // Comando fb - enviar video
+      await conn.sendMessage(
+        m.chat,
+        {
+          video: { url: chosen.url },
+          caption: `> ⓘ \`Facebook Downloader\`\n> ⓘ \`Calidad:\` *${chosen.quality || chosen.label}*`
+        },
+        { quoted: m }
+      )
     }
-
-    console.log('🎬 URL del video encontrada:', videoUrl)
-    console.log('📝 Título:', videoTitle)
-
-    // Enviar el video directamente desde la URL
-    await conn.sendMessage(m.chat, {
-      video: { url: videoUrl },
-      caption: `🎀 *AGG x ꜱᴇᴛʜɢx9 v4.3.1 Oficial*\n` +
-              `╰ Creado por: julio - Sethgx9 👑\n\n` +
-              `📹 ${videoTitle}\n` +
-              `⭐ Descargado desde Facebook`
-    }, { quoted: m })
 
     await m.react('✅')
-
   } catch (error) {
-    console.error('❌ Error en descarga Facebook:', error)
-
-    await conn.reply(m.chat,
-      `🎀 *AGG x ꜱᴇᴛʜɢx9*\n\n` +
-      `❌ *Error en la descarga*\n\n` +
-      `✦ *Detalles:* ${error.message}\n\n` +
-      `✦ *Posibles soluciones:*\n` +
-      `• Verifica que el enlace sea correcto\n` +
-      `• El video podría ser privado\n` +
-      `• Intenta con otro enlace\n` +
-      `• Espera un momento y vuelve a intentar\n\n` +
-      `🌸 *AGG lo intentará de nuevo...* (´；ω；\`)\n\n` +
-      `🎀 *AGG x ꜱᴇᴛʜɢx9 v3.4.0 Beta*\n` +
-      `╰ Creado por: Julio - Sethgx9 👑`,
-    m, ctxErr)
-
     await m.react('❌')
+    return conn.reply(m.chat, `> ⓘ \`Error:\` *${error.message}*`, m)
   }
 }
 
-handler.help = ['fb']
+handler.help = ['fb', 'fbaudio']
 handler.tags = ['downloader']
-handler.command = ['fb', 'facebook', 'fbd', 'fbdl']
-handler.register = true
+handler.command = ['fb', 'fbaudio']
 
 export default handler

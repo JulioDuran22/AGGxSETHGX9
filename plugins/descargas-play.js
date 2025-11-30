@@ -2,33 +2,22 @@ import fetch from 'node-fetch'
 import yts from 'yt-search'
 
 let handler = async (m, { conn, text, usedPrefix }) => {
-  const ctxErr = (global.rcanalx || {})
-  const ctxWarn = (global.rcanalw || {})
-  const ctxOk = (global.rcanalr || {})
-
   if (!text) {
-    return conn.reply(m.chat, `
-🎀 AGG x ꜱᴇᴛʜɢx9 - Descargar Multimedia 🎥✨️
+    return conn.reply(m.chat, 
+`> ⓘ USO INCORRECTO
 
-📝 Forma de uso:
-• ${usedPrefix}play <nombre de la canción>
+> ❌ Debes proporcionar el nombre de la canción
 
-💡 Ejemplos:
-• ${usedPrefix}play unravel Tokyo ghoul
-• ${usedPrefix}play crossing field
-
-🎯 Formato disponible:
-🎵 Audio MP3 (alta calidad)
-
-🌟 ¡Encuentra y descarga tu música favorita! 🎶
-    `.trim(), m, ctxWarn)
+> 📝 Ejemplos:
+> • ${usedPrefix}play nombre de la canción
+> • ${usedPrefix}play artista canción`, m)
   }
 
   try {
-    await conn.reply(m.chat, '*🔎 AGG Esta Buscando Tu Audio*', m, ctxOk)
+    await conn.sendMessage(m.chat, { react: { text: '🔍', key: m.key } })
 
     const search = await yts(text)
-    if (!search.videos.length) throw new Error('No encontré resultados para tu búsqueda.')
+    if (!search.videos.length) throw new Error('No encontré resultados')
 
     const video = search.videos[0]
     const { title, url, thumbnail } = video
@@ -43,13 +32,12 @@ let handler = async (m, { conn, text, usedPrefix }) => {
       }
     }
 
-    // ===== APIs para audio MP3 =====
     const fuentes = [
       { api: 'Adonix', endpoint: `https://api-adonix.ultraplus.click/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`, extractor: res => res?.data?.url },
       { api: 'MayAPI', endpoint: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=${global.APIKeys['https://mayapi.ooguy.com']}`, extractor: res => res.result.url }
     ]
 
-    let audioUrl, apiUsada, exito = false
+    let audioUrl, exito = false
 
     for (let fuente of fuentes) {
       try {
@@ -59,18 +47,22 @@ let handler = async (m, { conn, text, usedPrefix }) => {
         const link = fuente.extractor(data)
         if (link) {
           audioUrl = link
-          apiUsada = fuente.api
           exito = true
           break
         }
       } catch (err) {
-        console.log(`⚠️ Error con ${fuente.api}:`, err.message)
+        console.log(`Error con ${fuente.api}:`, err.message)
       }
     }
 
     if (!exito) {
-      await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } })
-      return conn.reply(m.chat, '*🧋 No se pudo enviar el audio desde ninguna API.*', m, ctxErr)
+      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+      return conn.reply(m.chat, 
+`> ⓘ ERROR
+
+> ❌ No se pudo obtener el audio
+
+> 💡 Las APIs están temporalmente fuera de servicio`, m)
     }
 
     await conn.sendMessage(
@@ -80,14 +72,22 @@ let handler = async (m, { conn, text, usedPrefix }) => {
         mimetype: 'audio/mpeg',
         ptt: false,
         jpegThumbnail: thumbBuffer,
-        caption: `🎼 ${title} | API: ${apiUsada}`
+        fileName: `audio.mp3`
       },
       { quoted: m }
     )
 
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
+
   } catch (e) {
-    console.error('❌ Error en play:', e)
-    await conn.reply(m.chat, `❌ Error: ${e.message}`, m, ctxErr)
+    console.error('Error en play:', e)
+    await conn.reply(m.chat, 
+`> ⓘ ERROR
+
+> ❌ ${e.message}
+
+> 💡 Verifica el nombre o intenta más tarde`, m)
+    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
   }
 }
 

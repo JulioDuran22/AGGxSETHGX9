@@ -15,6 +15,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (/webp|image|video/g.test(mime)) {
       if (/video/g.test(mime)) {
+        // Aumentado a 3 minutos (180 segundos)
         if ((q.msg || q).seconds > 180) {
           await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
           return conn.reply(m.chat, '> *Máximo 3 minutos*', m)
@@ -25,30 +26,24 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       if (!img) throw new Error('Error al descargar')
 
       const stickerOptions = {
-        pack: 'AGG X SETHGX9',
-        author: 'ꜱᴇᴛʜ 𝙱𝚘𝚝',
+        // Quitado pack y author
         type: StickerTypes.FULL,
-        categories: ['🎨', '✨'],
-        quality: 70,
+        quality: 70, // Mejor calidad
       }
 
       const sticker = new Sticker(img, stickerOptions)
       stiker = await sticker.toBuffer()
 
     } else if (args[0]) {
-
       if (isUrl(args[0])) {
         const stickerOptions = {
-          pack: 'AGG X SETHGX9',
-          author: 'ꜱᴇᴛʜ 𝙱𝚘𝚝',
+          // Quitado pack y author
           type: StickerTypes.FULL,
-          categories: ['🎨', '✨'],
           quality: 70,
         }
 
         const sticker = new Sticker(args[0], stickerOptions)
         stiker = await sticker.toBuffer()
-
       } else {
         await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
         return conn.reply(m.chat, '> *URL no válida*', m)
@@ -57,11 +52,10 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (stiker) {
       const fkontak = await makeFkontak()
-
       await conn.sendMessage(m.chat, {
         sticker: stiker
       }, { quoted: fkontak })
-
+      
       await conn.sendMessage(m.chat, { react: { text: '✅️', key: m.key } })
     }
 

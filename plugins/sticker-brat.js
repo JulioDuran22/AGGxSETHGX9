@@ -8,7 +8,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     try {
         if (!args[0]) {
             return conn.reply(m.chat, 
-                `> 🌸 𝙋𝙤𝙧 𝙛𝙖𝙫𝙤𝙧 𝙞𝙣𝙜𝙧𝙚𝙨𝙖 𝙚𝙡 𝙩𝙚𝙭𝙩𝙤 𝙦𝙪𝙚 𝙙𝙚𝙨𝙚𝙖𝙨 𝙘𝙤𝙣𝙫𝙚𝙧𝙩𝙞𝙧 𝙚𝙣 𝙨𝙩𝙞𝙘𝙠𝙚𝙧.\n\n> 𝗘𝗷𝗲𝗺𝗽𝗹𝗼: ${usedPrefix}𝗕𝗿𝗮𝘁 AGG x ꜱᴇᴛʜɢx9`,
+                `> 🌸 𝙋𝙤𝙧 𝙛𝙖𝙫𝙤𝙧 𝙞𝙣𝙜𝙧𝙚𝙨𝙖 𝙚𝙡 𝙩𝙚𝙭𝙩𝙤 𝙦𝙪𝙚 𝙙𝙚𝙨𝙚𝙖𝙨 𝙘𝙤𝙣𝙫𝙚𝙧𝙩𝙞𝙧 𝙚𝙣 𝙨𝙩𝙞𝙘𝙠𝙚𝙧.\n\n> 𝗘𝗷𝗲𝗺𝗽𝗹𝗼: ${usedPrefix}𝗕𝗿𝗮𝘁 𝗟𝗲𝗼 𝗘𝘀 𝗘𝗹 𝗠𝗲𝗷𝗼𝗿`, 
                 m, ctxWarn);
         }
 

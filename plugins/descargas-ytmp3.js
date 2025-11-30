@@ -1,65 +1,131 @@
-import fetch from "node-fetch"
+import { convertAndDownload } from '../lib/cnvDownloader.js'
 
-let handler = async (m, { conn, args }) => {
-  if (!args[0]) return m.reply(`🌟 Ingresa un link de YouTube\n\n📌 Ejemplo: .ytmp3 https://youtu.be/xxxxx`)
+const MAX_FILE_BYTES = 70 * 1024 * 1024
+const AUDIO_COMMANDS = ['ytmp3', 'yta', 'ytaudio', 'yt2']
+const VIDEO_COMMANDS = ['ytmp4', 'ytv', 'ytvideo']
 
-  const urlVideo = args[0].trim()
+let handler = async (m, { conn, args, text, usedPrefix, command }) => {
+        const rawInput = (text || '').trim()
+        const lowerCommand = (command || '').toLowerCase()
+        const isAudioCommand = AUDIO_COMMANDS.includes(lowerCommand)
+        const isVideoCommand = VIDEO_COMMANDS.includes(lowerCommand)
+        const mode = isVideoCommand ? 'video' : 'audio'
+        const isAudio = mode === 'audio'
 
-  try {
-    await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } })
+        let linkPart = rawInput
+        let qualityPart = ''
 
-    let res, fromBackup = false
+        if (rawInput.includes('|')) {
+                const parts = rawInput.split('|')
+                linkPart = (parts[0] || '').trim()
+                qualityPart = (parts[1] || '').trim()
+        } else if (args.length > 1) {
+                linkPart = args[0]
+                qualityPart = args.slice(1).join(' ')
+        }
 
-    try {
-      res = await fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${encodeURIComponent(urlVideo)}`)
-      if (!res.ok) throw new Error("Error en API principal")
-      console.log("» Usando API principal (Zenkey)")
-    } catch {
-      console.warn("» Error con API principal, intentando respaldo...")
-      res = await fetch(`https://apiadonix.kozow.com/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(urlVideo)}`)
-      if (!res.ok) throw new Error("Error en API de respaldo")
-      console.log("» Usando API de respaldo (Adonix)")
-      fromBackup = true
-    }
+        if (!linkPart) {
+                return
+        }
 
-    const data = await res.json()
-    console.log("📦 Respuesta completa del API:", JSON.stringify(data, null, 2))
+        const format = isAudio ? 'mp3' : 'mp4'
+        let audioBitrate = '320'
+        let videoQuality = '720'
 
-    const downloadUrl = fromBackup
-      ? data.url
-      : (
-        data.result?.download_url ??
-        data.download_url ??
-        data.url ??
-        data.result?.url ??
-        data.result?.link ??
-        data.result?.audio ??
-        null
-      )
+        if (qualityPart) {
+                if (isAudio) audioBitrate = qualityPart.toLowerCase()
+                else videoQuality = qualityPart.toLowerCase()
+        }
 
-    if (!downloadUrl) return m.reply("❌ No se pudo obtener el audio de la respuesta.")
+        await tryReact(m, '⏳')
 
-    const fileResp = await fetch(downloadUrl)
-    const buffer = Buffer.from(await fileResp.arrayBuffer())
+        try {
+                const result = await convertAndDownload(linkPart, {
+                        format,
+                        audioBitrate,
+                        videoQuality
+                })
 
-    await conn.sendMessage(
-      m.chat,
-      {
-        audio: buffer,
-        mimetype: "audio/mpeg",
-        fileName: `audio.mp3`
-      },
-      { quoted: m }
-    )
+                if (result.size && result.size > MAX_FILE_BYTES) {
+                        await tryReact(m, '✖️')
+                        return
+                }
 
-  } catch (e) {
-    console.error("❌ Error en ytmp3 handler:", e)
-    m.reply("❌ Error al descargar el audio. Intenta con otro link.")
-  }
+                const fileName = result.fileName || result.filename || `yt.${isAudio ? 'mp3' : 'mp4'}`
+                
+                let delivered = false
+                
+                if (isAudio) {
+                        // Para audio
+                        try {
+                                await conn.sendMessage(
+                                        m.chat,
+                                        { 
+                                                audio: result.buffer, 
+                                                mimetype: 'audio/mpeg',
+                                                fileName: fileName,
+                                                ptt: false 
+                                        },
+                                        { quoted: m }
+                                )
+                                delivered = true
+                        } catch (audioErr) {
+                                console.error('Error enviando audio:', audioErr)
+                        }
+                } else {
+                        // Para video - forzar codecs compatibles con WhatsApp
+                        try {
+                                await conn.sendMessage(
+                                        m.chat,
+                                        { 
+                                                video: result.buffer, 
+                                                mimetype: 'video/mp4',
+                                                fileName: fileName
+                                        },
+                                        { quoted: m }
+                                )
+                                delivered = true
+                        } catch (videoErr) {
+                                console.error('Error enviando video:', videoErr)
+                                // Intentar como documento si falla
+                                try {
+                                        await conn.sendMessage(
+                                                m.chat,
+                                                {
+                                                        document: result.buffer,
+                                                        mimetype: 'video/mp4',
+                                                        fileName: fileName
+                                                },
+                                                { quoted: m }
+                                        )
+                                        delivered = true
+                                } catch (docErr) {
+                                        console.error('Error enviando documento:', docErr)
+                                }
+                        }
+                }
+
+                if (!delivered) {
+                        await tryReact(m, '✖️')
+                        return
+                }
+
+                await tryReact(m, '✅')
+        } catch (error) {
+                console.error('Error en conversión:', error)
+                await tryReact(m, '✖️')
+        }
 }
 
-handler.command = ['ytmp3']
-handler.help = ["ytmp3 <link>"]
-handler.tags = ["descargas"]
+async function tryReact(m, emoji) {
+        if (typeof m?.react !== 'function') return
+        try {
+                await m.react(emoji)
+        } catch {}
+}
+
+handler.help = ['ytmp3']
+handler.tags = ['downloader']
+handler.command = /^(ytmp3|ytmp4)$/i
 
 export default handler

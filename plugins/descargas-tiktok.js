@@ -1,12 +1,8 @@
-// Código Adaptado Para Itsuki-IA 💕
-
-
 import axios from 'axios'
 
-const handler = async (m, { conn, text, usedPrefix }) => {
+const handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) {
-    return conn.reply(m.chat, `🌸 *¿Y qué quieres que busque en TikTok sin decirme nada?*  
-Dame un enlace o escribe algo lindo, baka~ 💗`, m)
+    return conn.reply(m.chat, `> ⓘ \`Debes proporcionar un enlace o término de búsqueda\``, m)
   }
 
   const isUrl = /(?:https:?\/{2})?(?:www\.|vm\.|vt\.|t\.)?tiktok\.com\/([^\s&]+)/gi.test(text)
@@ -16,77 +12,71 @@ Dame un enlace o escribe algo lindo, baka~ 💗`, m)
     if (isUrl) {
       const res = await axios.get(`https://www.tikwm.com/api/?url=${encodeURIComponent(text)}?hd=1`)
       const data = res.data?.data
-      if (!data?.play) return conn.reply(m.chat, 'ꕥ Enlace inválido o sin contenido descargable.', m)
+      if (!data?.play && !data?.music) return conn.reply(m.chat, '> ⓘ \`Enlace inválido o sin contenido descargable\`', m)
 
-      const { title, duration, author, created_at, type, images, music, play } = data
-      const caption = createCaption(title, author, duration, created_at)
+      const { title, duration, author, play, music } = data
 
-      if (type === 'image' && Array.isArray(images)) {
-        const medias = images.map(url => ({ type: 'image', data: { url }, caption }))
-        await conn.sendSylphy(m.chat, medias, { quoted: m })
-
-        if (music) {
-          await conn.sendMessage(m.chat, { 
-            audio: { url: music }, 
-            mimetype: 'audio/mp4', 
-            fileName: 'tiktok_audio.mp4' 
-          }, { quoted: m })
+      // Si el comando es para audio
+      if (command === 'tiktokaudio' || command === 'tta' || command === 'ttaudio') {
+        if (!music) {
+          return conn.reply(m.chat, '> ⓘ \`No se pudo obtener el audio del video\`', m)
         }
-      } else {
-        await conn.sendMessage(m.chat, { video: { url: play }, caption }, { quoted: m })
+
+        await conn.sendMessage(
+          m.chat,
+          {
+            audio: { url: music },
+            mimetype: 'audio/mpeg',
+            fileName: `tiktok_audio.mp3`,
+            ptt: false
+          },
+          { quoted: m }
+        )
+
+        await m.react('✅')
+        return
       }
 
+      // Comando normal de TikTok (video)
+      const caption = `> ⓘ \`Título:\` *${title || 'No disponible'}*\n> ⓘ \`Autor:\` *${author?.nickname || 'No disponible'}*`
+
+      await conn.sendMessage(m.chat, { video: { url: play }, caption }, { quoted: m })
+
     } else {
+      // Búsqueda por texto (solo para comando normal)
+      if (command === 'tiktokaudio' || command === 'tta' || command === 'ttaudio') {
+        return conn.reply(m.chat, '> ⓘ \`Para descargar audio necesitas un enlace de TikTok\`', m)
+      }
+
       const res = await axios({
         method: 'POST',
         url: 'https://tikwm.com/api/feed/search',
         headers: { 
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'Cookie': 'current_language=en',
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36' 
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
         },
-        data: { keywords: text, count: 20, cursor: 0, HD: 1 }
+        data: { keywords: text, count: 5, cursor: 0, HD: 1 }
       })
 
       const results = res.data?.data?.videos?.filter(v => v.play) || []
-      if (results.length < 2) return conn.reply(m.chat, 'ꕥ Se requieren al menos 2 resultados válidos con contenido.', m)
+      if (results.length === 0) return conn.reply(m.chat, '> ⓘ \`No se encontraron videos\`', m)
 
-      const medias = results.slice(0, 10).map(v => ({
-        type: 'video',
-        data: { url: v.play },
-        caption: createSearchCaption(v)
-      }))
-      await conn.sendSylphy(m.chat, medias, { quoted: m })
+      // Enviar solo el primer resultado
+      const video = results[0]
+      const caption = `> ⓘ \`Título:\` *${video.title || 'No disponible'}*\n> ⓘ \`Autor:\` *${video.author?.nickname || 'No disponible'}*`
+      
+      await conn.sendMessage(m.chat, { video: { url: video.play }, caption }, { quoted: m })
     }
 
-    await m.react('✅️')
+    await m.react('✅')
   } catch (e) {
-    await m.react('❎️')
-    await conn.reply(m.chat, `😵‍💫 Oops, algo salió mal...  
-💕 Usa *${usedPrefix}report* si quieres informarlo.  
-
-${e.message}`, m)
+    await m.react('❌')
+    await conn.reply(m.chat, `> ⓘ \`Error:\` *${e.message}*`, m)
   }
 }
 
-function createCaption(title, author, duration, created_at = '') {
-  return `🦋 *Título ›* \`${title || 'No disponible'}\`\n` +
-         `> 👑 Autor › *${author?.nickname || author?.unique_id || 'No disponible'}*\n` +
-         `> ⏳️ Duración › *${duration || 'No disponible'}s*` +
-         `${created_at ? `\n> 📆 Creado » ${created_at}` : ''}\n` +
-         `> 🎶 Música » [${author?.nickname || author?.unique_id || 'No disponible'}] original sound - ${author?.unique_id || 'unknown'}`
-}
-
-function createSearchCaption(data) {
-  return `🪷 Título › ${data.title || 'No disponible'}\n\n` +
-         `👑 Autor › ${data.author?.nickname || 'Desconocido'} ${data.author?.unique_id ? `@${data.author.unique_id}` : ''}\n` +
-         `⏳️ Duración › ${data.duration || 'No disponible'}\n` +
-         `🎶 Música › ${data.music?.title || `[${data.author?.nickname || 'No disponible'}] original sound - ${data.author?.unique_id || 'unknown'}`}`
-}
-
-handler.help = ['tiktok', 'tt']
+handler.help = ['tiktok', 'tiktokaudio']
 handler.tags = ['downloader']
-handler.command = ['tiktok', 'tt', 'tiktoks', 'tts']
+handler.command = ['tiktok', 'tt', 'tiktokaudio', 'tta', 'ttaudio']
 handler.group = true
 
 export default handler

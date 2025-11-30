@@ -1,53 +1,41 @@
 import fetch from 'node-fetch'
 
-/**
- * 🎀 CREADO POR: LeoXzzsy 
- * 📚 VERSIÓN: 3.5.1 Beta
- * 🏷️ DESCARGADOR DE INSTAGRAM
- */
-
-let handler = async (m, { conn, usedPrefix, args }) => {
-  const ctxErr = (global.rcanalx || {})
-  const ctxWarn = (global.rcanalw || {})
-
+let handler = async (m, { conn, usedPrefix, args, command }) => {
   try {
     if (!args[0]) {
       return conn.reply(m.chat,
-        `🎀 *AGG x ꜱᴇᴛʜɢx9 - Descargador Instagram*\n\n` +
-        `✦ *Uso correcto:*\n` +
-        `*${usedPrefix}ig* <url_de_instagram>\n\n` +
-        `✦ *Ejemplo:*\n` +
-        `*${usedPrefix}ig* https://www.instagram.com/p/xxxxx\n\n` +
-        `🌸 *Itsuki te ayudará a descargar el contenido...* (◕‿◕✿)`,
-      m, ctxWarn)
+        `> ⓘ USO INCORRECTO
+
+> ❌ Debes proporcionar un enlace de Instagram
+
+> 📝 Ejemplos:
+> • ${usedPrefix + command} https://www.instagram.com/p/xxxxx
+> • ${usedPrefix}ig https://instagram.com/reel/xxxxx
+
+> 💡 Comandos:
+> • ${usedPrefix}ig <url> - Descargar video/imagen
+> • ${usedPrefix}igaudio <url> - Extraer audio`, m)
     }
 
     const url = args[0]
     if (!url.match(/instagram\.com/)) {
       return conn.reply(m.chat,
-        `🎀 *AGG x ꜱᴇᴛʜɢx9*\n\n` +
-        `❌ *URL no válida*\n\n` +
-        `✦ Por favor envía un enlace de Instagram válido\n` +
-        `✦ Ejemplo: https://www.instagram.com/p/xxxxx\n\n` +
-        `🌸 *Itsuki está confundida...* (´･ω･\`)`,
-      m, ctxErr)
+        `> ⓘ ENLACE INVALIDO
+
+> ❌ URL no válida
+
+> 💡 Ejemplo correcto:
+> https://www.instagram.com/p/xxxxx
+> https://instagram.com/reel/xxxxx`, m)
     }
 
-    await m.react('📥')
-    await conn.reply(m.chat,
-      `🎀 *AGG x ꜱᴇᴛʜɢx9*\n\n` +
-      `📥 *Procesando contenido de Instagram...*\n` +
-      `✦ Analizando enlace...\n` +
-      `✦ Preparando descarga...\n\n` +
-      `🌸 *Por favor espera un momento...* (◕‿◕✿)`,
-    m, ctxWarn)
+    await conn.sendMessage(m.chat, { react: { text: '🔍', key: m.key } })
 
     const api1 = `https://mayapi.ooguy.com/instagram?url=${encodeURIComponent(url)}&apikey=may-f53d1d49`
     const api2 = `https://apiadonix.kozow.com/download/instagram?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
 
-    let mediaUrl, mediaTitle, mediaType, apiUsada = 'May API'
+    let mediaUrl, mediaTitle, mediaType
 
-    
     try {
       const res = await fetch(api1, { timeout: 30000 })
       if (!res.ok) throw new Error('Error en API principal')
@@ -67,13 +55,10 @@ let handler = async (m, { conn, usedPrefix, args }) => {
         mediaType = data.data.type || 'video'
       }
     } catch {
-      
-      apiUsada = 'API Adonix'
       const res2 = await fetch(api2, { timeout: 30000 })
       if (!res2.ok) throw new Error('Error en API de respaldo')
       const data2 = await res2.json()
 
-    
       const adonixData = Array.isArray(data2.data) ? data2.data[0] : data2.data
       mediaUrl = adonixData?.url
       mediaTitle = 'Contenido de Instagram'
@@ -83,48 +68,51 @@ let handler = async (m, { conn, usedPrefix, args }) => {
     if (!mediaUrl) throw new Error('No se encontró contenido válido')
 
     const isVideo = mediaType === 'video' || mediaUrl.includes('.mp4')
+    const isAudioCommand = command.toLowerCase().includes('audio')
 
-    if (isVideo) {
+    if (isAudioCommand && isVideo) {
+      await conn.sendMessage(m.chat, {
+        audio: { url: mediaUrl },
+        mimetype: 'audio/mpeg',
+        fileName: `audio_instagram.mp3`
+      }, { quoted: m })
+    } else if (isVideo) {
       await conn.sendMessage(m.chat, {
         video: { url: mediaUrl },
-        caption: `🎀 *AGG x ꜱᴇᴛʜɢx9 v3.5.1 Beta*\n` +
-                 `╰ Creado por: julio - Sethgx9 👑\n\n` +
-                 `📹 ${mediaTitle}\n` +
-                 `⭐ Descargado desde Instagram\n` +
-                 `🔧 *Servidor:* ${apiUsada}`
+        caption: `> ⓘ VIDEO DESCARGADO
+
+> 📹 ${mediaTitle}
+> 🎬 Formato: MP4
+> 🎁 Calidad: Original`
       }, { quoted: m })
     } else {
       await conn.sendMessage(m.chat, {
         image: { url: mediaUrl },
-        caption: `🎀 *AGG x ꜱᴇᴛʜɢx9 v4.3.1 Oficial*\n` +
-                 `╰ Creado por: julio - Sethgx9 👑\n\n` +
-                 `🖼️ ${mediaTitle}\n` +
-                 `⭐ Descargado desde Instagram\n` +
-                 `🔧 *Servidor:* ${apiUsada}`
+        caption: `> ⓘ IMAGEN DESCARGADA
+
+> 🖼️ ${mediaTitle}
+> 🎨 Formato: JPEG
+> 🎁 Calidad: Original`
       }, { quoted: m })
     }
 
-    await m.react('✅')
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
 
   } catch (error) {
-    console.error('❌ Error en descarga Instagram:', error)
+    console.error('Error en descarga Instagram:', error)
     await conn.reply(m.chat,
-      `🎀 *AGG x ꜱᴇᴛʜɢx9*\n\n` +
-      `❌ *Error en la descarga*\n\n` +
-      `✦ *Detalles:* ${error.message}\n\n` +
-      `✦ *Posibles soluciones:*\n` +
-      `• Enlace incorrecto o privado\n` +
-      `• Contenido restringido o eliminado\n\n` +
-      `🌸 *AGG lo intentará de nuevo...* (´；ω；\`)\n\n` +
-      `🎀 *AGG x ꜱᴇᴛʜɢx9 v3.5.1 Beta*`,
-    m, ctxErr)
-    await m.react('❌')
+      `> ⓘ ERROR
+
+> ❌ ${error.message}
+
+> 💡 Verifica el enlace o intenta más tarde`, m)
+    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
   }
 }
 
-handler.help = ['ig']
+handler.help = ['ig', 'igaudio']
 handler.tags = ['downloader']
-handler.command = ['ig', 'instagram', 'igdl']
-handler.register = true
+handler.command = ['ig', 'igaudio']
+handler.register = false
 
 export default handler

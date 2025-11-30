@@ -34,7 +34,7 @@ m.reply(top, null, { mentions: [a, b, c, d, e, f, g, h, i, j]})
 }
 handler.help = ['rank *<texto>*']
 handler.command = ['rank']
-handler.tags = ['fun']
+handler.tags = ['funn']
 handler.group = true;
 
 

@@ -22,7 +22,7 @@ try {
     // Enviar la imagen
     await conn.sendFile(m.chat, json.url, 'waifu.jpg', 
         `🌸 *¡WAIFU ENCONTRADA!* 🌸\n` +
-        `🧧 *AGG x ꜱᴇᴛʜɢx9 - Waifu Kawaii* 🧧\n\n` +
+        `🧧 *Itsuki Nakano-IA te presenta:*\n` +
         `✨ Una waifu virtual perfecta para ti\n` +
         `📚 ¿No es absolutamente kawaii? (◕‿◕✿)\n` +
         `🍜 ~ Disfruta de tu compañera virtual ~`, 
@@ -42,7 +42,7 @@ try {
 } catch (error) {
     console.error(error)
     await m.react('❌')
-    await conn.reply(m.chat, `*AGG x ꜱᴇᴛʜɢx9 dice:*\n╰ ❌ Ocurrió un error al buscar waifus...\n╰ 📚 Por favor, intenta de nuevo más tarde.`, m, ctxErr)
+    await conn.reply(m.chat, `*Itsuki Nakano-IA dice:*\n╰ ❌ Ocurrió un error al buscar waifus...\n╰ 📚 Por favor, intenta de nuevo más tarde.`, m, ctxErr)
 }
 }
 
