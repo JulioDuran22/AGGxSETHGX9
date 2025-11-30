@@ -1,10 +1,6 @@
 import { Sticker, StickerTypes } from 'wa-sticker-formatter'
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-  const ctxErr = (global.rcanalx || {})
-  const ctxWarn = (global.rcanalw || {})
-  const ctxOk = (global.rcanalr || {})
-
   let stiker = false
 
   try {
@@ -12,106 +8,87 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     let mime = (q.msg || q).mimetype || q.mediaType || ''
 
     if (!/webp|image|video/g.test(mime) && !args[0]) {
-      return conn.reply(m.chat, `
-🍙 *AGG X ꜱᴇᴛʜɢx9- Stickers* 🖼️
-
-*✨️ Onii-chan~ Responde a una imagen/video con .s 🪷*
-
-> 🎨 ¡Hagámoslo juntos! 🎀
-      `.trim(), m, ctxWarn)
+      return conn.reply(m.chat, `> » *Responde a una imagen/video con* ${usedPrefix + command}`, m)
     }
 
-    await conn.reply(m.chat, '🍙🎨 *Creando tu sticker...* ⏳✨', m, ctxOk)
+    await conn.sendMessage(m.chat, { react: { text: '🕑', key: m.key } })
 
     if (/webp|image|video/g.test(mime)) {
       if (/video/g.test(mime)) {
-        if ((q.msg || q).seconds > 8) {
-          return conn.reply(m.chat, '❌ *El video no puede durar más de 8 segundos*', m, ctxErr)
+        if ((q.msg || q).seconds > 180) {
+          await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+          return conn.reply(m.chat, '> *Máximo 3 minutos*', m)
         }
       }
 
       let img = await q.download?.()
-      if (!img) {
-        return conn.reply(m.chat, '❌ *Error al descargar el archivo*', m, ctxErr)
+      if (!img) throw new Error('Error al descargar')
+
+      const stickerOptions = {
+        pack: 'AGG X SETHGX9',
+        author: 'ꜱᴇᴛʜ 𝙱𝚘𝚝',
+        type: StickerTypes.FULL,
+        categories: ['🎨', '✨'],
+        quality: 70,
       }
 
-      try {
-        // Usar sticker-creator (más moderno)
-        const stickerOptions = {
-          pack: 'AGG x ꜱᴇᴛʜɢx9 sᴛᴋ',
-          author: 'AGG x ꜱᴇᴛʜɢx9',
-          type: StickerTypes.FULL,
-          categories: ['🎨', '✨'],
-          quality: 50,
-        }
-
-        const sticker = new Sticker(img, stickerOptions)
-        stiker = await sticker.toBuffer() // o .build() dependiendo de la versión
-
-      } catch (e) {
-        console.error(e)
-        // Fallback a sharp si sticker-creator falla
-        try {
-          stiker = await sharp(img)
-            .resize(512, 512, {
-              fit: 'contain',
-              background: { r: 0, g: 0, b: 0, alpha: 0 }
-            })
-            .webp({ quality: 80 })
-            .toBuffer()
-        } catch (fallbackError) {
-          return conn.reply(m.chat, '❌ *Error al crear el sticker*', m, ctxErr)
-        }
-      }
+      const sticker = new Sticker(img, stickerOptions)
+      stiker = await sticker.toBuffer()
 
     } else if (args[0]) {
+
       if (isUrl(args[0])) {
-        try {
-          // Para URLs usar sticker-creator
-          const stickerOptions = {
-            pack: 'AGG x ꜱᴇᴛʜɢx9',
-            author: 'Tutora Virtual',
-            type: StickerTypes.FULL,
-            categories: ['🎨', '✨'],
-            quality: 50,
-          }
-
-          const sticker = new Sticker(args[0], stickerOptions)
-          stiker = await sticker.toBuffer()
-
-        } catch (e) {
-          console.error(e)
-          return conn.reply(m.chat, '❌ *Error con la URL proporcionada*', m, ctxErr)
+        const stickerOptions = {
+          pack: 'AGG X SETHGX9',
+          author: 'ꜱᴇᴛʜ 𝙱𝚘𝚝',
+          type: StickerTypes.FULL,
+          categories: ['🎨', '✨'],
+          quality: 70,
         }
+
+        const sticker = new Sticker(args[0], stickerOptions)
+        stiker = await sticker.toBuffer()
+
       } else {
-        return conn.reply(m.chat, '❌ *URL no válida*', m, ctxErr)
+        await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+        return conn.reply(m.chat, '> *URL no válida*', m)
       }
     }
 
     if (stiker) {
-      // Enviar el sticker
+      const fkontak = await makeFkontak()
+
       await conn.sendMessage(m.chat, {
         sticker: stiker
-      }, { quoted: m })
+      }, { quoted: fkontak })
 
-      
-    } else {
-      return conn.reply(m.chat, '❌ *No se pudo crear el sticker*', m, ctxErr)
+      await conn.sendMessage(m.chat, { react: { text: '✅️', key: m.key } })
     }
 
   } catch (error) {
     console.error('Error en sticker:', error)
-    await conn.reply(m.chat, 
-      `❌ *Error al crear el sticker*\n\n` +
-      `🍙 *"¡Lo siento! No pude crear tu sticker."*\n\n` +
-      `🔧 *Error:* ${error.message}\n\n` +
-      `📖 *¡Intenta con otro archivo!* 🍱✨`,
-      m, ctxErr
-    )
+    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+    await conn.reply(m.chat, '> *Error al crear sticker*', m)
   }
 }
 
-handler.help = ['sticker', 's', 'stiker']
+// Quoted especial con mini-thumbnail
+async function makeFkontak() {
+  try {
+    const { default: fetch } = await import('node-fetch')
+    const res = await fetch('https://cdn.russellxz.click/64bba973.jpg')
+    const thumb2 = Buffer.from(await res.arrayBuffer())
+    return {
+      key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
+      message: { locationMessage: { name: '🖼️ 𝗦𝘁𝗶𝗰𝗸𝗲𝗿 𝗖𝗿𝗲𝗮𝗱𝗼 𝗖𝗼𝗻 𝗘𝘅𝗶𝘁𝗼 ✅', jpegThumbnail: thumb2 } },
+      participant: '0@s.whatsapp.net'
+    }
+  } catch {
+    return undefined
+  }
+}
+
+handler.help = ['sticker', 's']
 handler.tags = ['tools']
 handler.command = ['s', 'sticker']
 
