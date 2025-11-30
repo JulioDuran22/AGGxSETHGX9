@@ -38,7 +38,7 @@ const handler = async (m, {conn, text, participants, isOwner, isAdmin}) => {
 };
 handler.help = ['tag'];
 handler.tags = ['grupo'];
-handler.command = ['tag'];
+handler.command = ['tag', 'n'];
 handler.group = true;
 handler.admin = true;
 export default handler;
