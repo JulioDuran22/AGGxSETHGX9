@@ -26,7 +26,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 > ੭੭﹙❐﹚ \`Uptime :\` *${await getUptime()}*
 > ੭੭﹙❐﹚ \`RAM :\` *${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)}* MB
 > ੭੭﹙❐﹚ \`Plugins :\` *${help.length}*
-> ੭੭﹙❐﹚ \`Owner :\` *@sethgx9*
+> ੭੭﹙❐﹚ \`Owner :\` *@JulioDev*
 > ੭੭﹙❐﹚ \`Mode :\` *${global.opts['self'] ? 'Private' : 'Public'}*
 
 `
@@ -34,10 +34,9 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
     const categories = {
       'NAKANO-INFO': ['main', 'info'],
       'INTELIGENCIA': ['bots', 'ia'],
+      'FREE FIRE y TOPS': ['free', 'funn'],
       'JUEGOS': ['game', 'gacha'],
       'ECONOMÍA': ['economy', 'rpgnk'],
-      'FREE FIRE': ['free'],
-      'TOPS': ['funn'],
       'GRUPOS': ['group'],
       'DESCARGAS': ['downloader'],
       'MULTIMEDIA': ['sticker', 'audio', 'anime'],
@@ -61,7 +60,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
       }
     }
 
-    menuText += `> *‐ ダ mᥲძᥱ ᑲᥡ © 𝘼𝙂𝙂 𝙭 𝙎𝙀𝙏𝙃𝙂𝙓9*`
+    menuText += `> *‐ ダ mᥲძᥱ ᑲᥡ SETHGX9 🧋*`
 
     await conn.sendMessage(m.chat, { react: { text: '❄️', key: m.key } })
 
@@ -79,7 +78,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
         name: 'cta_url',
         buttonParamsJson: JSON.stringify({ 
           display_text: '💻 ʜᴏsᴛɪɴɢ-ᴏғɪᴄɪᴀʟ', 
-          url: 'https://whatsapp.com/channel/0029VbBc97b2ZjCtQ6FSCe1h' 
+          url: 'https://chat.whatsapp.com/CT8JP1E0JshDtdVz2yaEKy?mode=hqrt2' 
         })
       }
     ]
@@ -115,7 +114,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
   } catch (e) {
     console.error('❌ Error en el menú:', e)
     await conn.sendMessage(m.chat, {
-      text: `🍙 *ITSUNI MENÚ BÁSICO*\n\n• ${_p}menu - Menú principal\n• ${_p}ping - Estado del bot\n• ${_p}prefijos - Ver prefijos\n\n⚠️ *Error:* ${e.message}`
+      text: `🍙 *ITSUKI MENÚ BÁSICO*\n\n• ${_p}menu - Menú principal\n• ${_p}ping - Estado del bot\n• ${_p}prefijos - Ver prefijos\n\n⚠️ *Error:* ${e.message}`
     }, { quoted: m })
   }
 }
@@ -146,6 +145,6 @@ async function getUptime() {
 
 handler.help = ['menu','help']
 handler.tags = ['main']
-handler.command = ['itsuki', 'menu', 'help']
+handler.command = ['AGG', 'menu', 'help']
 
 export default handler
