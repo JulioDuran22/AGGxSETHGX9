@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.53",
-    "@whiskeysockets/baileys": "github:AkiraDevX/baileys"
+    "@whiskeysockets/baileys": "github:AkiraDevX/baileys",
     "aptoide-scraper": "github:DIEGO-OFC/dv-aptoide-scraper",
     "awesome-phonenumber": "^5.5.1",
     "axios": "^1.1.2",
